@@ -54,7 +54,7 @@ class ProgressBar(QWidget):
         self.progress = 0
         self.total = 1
 
-        self.setFixedSize(380, 1)
+        self.setFixedSize(480, 1)
 
     def paintEvent(self, e):
         painter = QPainter(self)
@@ -66,8 +66,8 @@ class ProgressBar(QWidget):
         # Draw completed progress
         completed_rect = QRect(0,0,completed_width,self.height())
         remaining_rect = QRect(completed_width, 0, remaining_width, self.height())
-        painter.fillRect(completed_rect, QColor(90,90,90))
-        painter.fillRect(remaining_rect, QColor(50,50,50))
+        painter.fillRect(completed_rect, QColor(200,200,200))
+        painter.fillRect(remaining_rect, QColor(120,120,120))
 
         painter.end()
     
@@ -75,7 +75,7 @@ class ComicStats(QWidget):
     def __init__(self):
         super(ComicStats, self).__init__()
 
-        self.setFixedSize(400, 115)
+        self.setFixedSize(500, 115)
 
         self.setAutoFillBackground(True)
         p = self.palette()
@@ -93,11 +93,14 @@ class ComicStats(QWidget):
         self.yesterday = StatView('Yesterday', 'Read', '', parent=self)
         self.yesterday.move(100,5)
 
-        self.week = StatView('7-Day', 'Avg', '', parent=self)
+        self.week = StatView('7-Day', 'Read', '', parent=self)
         self.week.move(200,5)
 
+        self.month = StatView('30-Day', 'Read', '', parent=self)
+        self.month.move(300,5)
+
         self.overall = StatView('Total', 'Read', '', parent=self)
-        self.overall.move(300,5)
+        self.overall.move(400,5)
 
         self.progressBar = ProgressBar()
         self.progressBar.setParent(self)
@@ -108,7 +111,7 @@ class ComicStats(QWidget):
         self.metric = 'Read'
         self.toggle_timer = QTimer()
         self.toggle_timer.timeout.connect(self.toggle_metrics)
-        self.toggle_timer.start(30000)
+        self.toggle_timer.start(10000)
 
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_data)
@@ -129,27 +132,30 @@ class ComicStats(QWidget):
         _, yesterday_progress = self.progresses[-2]
         _, day_before_yday_progress = self.progresses[-3]
         _, week_progress = self.progresses[-8]
+        _, month_progress = self.progresses[-31]
         start_day, _ = self.progresses[0]
 
         self.progressBar.progress = today_progress
 
         self.today.value = str(today_progress - yesterday_progress)
         self.yesterday.value = str(yesterday_progress - day_before_yday_progress)
+        self.overall.value = str(today_progress)
 
         if metric == 'Read':
             self.week.metric = 'Read'
             self.week.value = str(today_progress - week_progress)
+            
+            self.month.metric = 'Read'
+            self.month.value = str(today_progress - month_progress)
 
-            self.overall.metric = 'Read'
-            self.overall.value = str(today_progress)
         elif metric == 'Average':
             self.week.metric = 'Average'
             week_average = (today_progress - week_progress) / 7
             self.week.value = f'{week_average:.01f}'
 
-            self.overall.metric = 'Average'
-            overall_average = today_progress / (today - start_day).days
-            self.overall.value = f'{overall_average:.01f}'
+            self.month.metric = 'Average'
+            month_average = today_progress / (today - start_day).days
+            self.month.value = f'{month_average:.01f}'
         else:
             assert False
         
@@ -173,12 +179,14 @@ class ComicStats(QWidget):
         today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
 
         result = []
+        previous_count = data['count']
         while current_day <= today:
-            result.append((current_day, data['count'])) 
-
-            if data['date'] == current_day:
+            if current_day == data['date']:
+                previous_count = data['count']
+                result.append((current_day, data['count']))
                 data = next(all_data, data)
-
+            else: 
+                result.append((current_day, previous_count))
             current_day = current_day + timedelta(days=1)
 
         return result 

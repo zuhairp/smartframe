@@ -10,3 +10,16 @@ class Picture(QWidget):
         self.picture_widget.setPixmap(QPixmap('wallpaper.jpg'))
         self.picture_widget.setScaledContents(True)
         self.picture_widget.setParent(self)
+
+        self.watcher = QFileSystemWatcher()
+        self.watcher.setParent(self)
+
+        self.watcher.addPath('/home/zuhair/smartframe/wallpaper.jpg')
+        self.watcher.addPath('/home/zuhair/smartframe')
+
+        self.watcher.fileChanged.connect(self.reload_image)
+        self.watcher.directoryChanged.connect(self.reload_image)
+
+    def reload_image(self, path):
+        print(path)
+        self.picture_widget.setPixmap(QPixmap('wallpaper.jpg'))

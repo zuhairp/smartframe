@@ -70,9 +70,8 @@ class PrayerTable(QWidget):
         self.player = QMediaPlayer()
         self.player.setParent(self)
 
-        self.adhan = QMediaContent(QUrl.fromLocalFile("adhan.mp3"))
-        self.fajr_adhan = QMediaContent(QUrl.fromLocalFile("fajr_adhan.mp3"))
-
+        self.adhan = QMediaContent(QUrl.fromLocalFile("/home/zuhair/smartframe/adhan.mp3"))
+        self.fajr_adhan = QMediaContent(QUrl.fromLocalFile("/home/zuhair/smartframe/fajr_adhan.mp3"))
 
         self.refresh_data()
     
