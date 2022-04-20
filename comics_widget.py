@@ -93,11 +93,19 @@ class ComicStats(QWidget):
         self.yesterday = StatView('Yesterday', 'Read', '', parent=self)
         self.yesterday.move(100,5)
 
-        self.week = StatView('7-Day', 'Read', '', parent=self)
+        self.week = StatView('This Week', 'Read', '', parent=self)
         self.week.move(200,5)
 
-        self.month = StatView('30-Day', 'Read', '', parent=self)
+        self.last_week = StatView('Last Week', 'Read', '', parent=self)
+        self.last_week.move(200,5)
+        self.last_week.hide()
+
+        self.month = StatView('This Month', 'Read', '', parent=self)
         self.month.move(300,5)
+
+        self.last_month = StatView('Last Month', 'Read', '', parent=self)
+        self.last_month.move(300,5)
+        self.last_month.hide()
 
         self.overall = StatView('Total', 'Read', '', parent=self)
         self.overall.move(400,5)
@@ -108,7 +116,7 @@ class ComicStats(QWidget):
 
         self.refresh_data()
 
-        self.metric = 'Read'
+        self.counter = 0
         self.toggle_timer = QTimer()
         self.toggle_timer.timeout.connect(self.toggle_metrics)
         self.toggle_timer.start(10000)
@@ -121,46 +129,90 @@ class ComicStats(QWidget):
         data = self.get_comics_data() 
         self.progresses = self.daily_progress(data['progress'])
         self.progressBar.total = data['total']
-        self.update_metrics('Average')
+        self.update_metrics()
     
     def toggle_metrics(self):
-        self.metric = 'Average' if self.metric == 'Read' else 'Read'
-        self.update_metrics(self.metric)
+        self.counter += 1
 
-    def update_metrics(self, metric='Read'):
-        today, today_progress = self.progresses[-1]
-        _, yesterday_progress = self.progresses[-2]
-        _, day_before_yday_progress = self.progresses[-3]
-        _, week_progress = self.progresses[-8]
-        _, month_progress = self.progresses[-31]
-        start_day, _ = self.progresses[0]
+        if self.counter % 2 == 0:
+            self.week.show()
+            self.month.show()
 
-        self.progressBar.progress = today_progress
-
-        self.today.value = str(today_progress - yesterday_progress)
-        self.yesterday.value = str(yesterday_progress - day_before_yday_progress)
-        self.overall.value = str(today_progress)
-
-        if metric == 'Read':
-            self.week.metric = 'Read'
-            self.week.value = str(today_progress - week_progress)
-            
-            self.month.metric = 'Read'
-            self.month.value = str(today_progress - month_progress)
-
-        elif metric == 'Average':
-            self.week.metric = 'Average'
-            week_average = (today_progress - week_progress) / 7
-            self.week.value = f'{week_average:.01f}'
-
-            self.month.metric = 'Average'
-            month_average = today_progress / (today - start_day).days
-            self.month.value = f'{month_average:.01f}'
+            self.last_week.hide()
+            self.last_month.hide()
         else:
-            assert False
-        
+            self.week.hide()
+            self.month.hide()
+
+            self.last_week.show()
+            self.last_month.show()
+
+    def update_metrics(self):
+        self.update_today()
+        self.update_yesterday()
+        self.update_week_to_date()
+        self.update_month_to_date()
+        self.update_total()
+        self.update_last_week()
+        self.update_last_month()
+
         for child in self.children():
             child.update()
+    
+    def update_today(self):
+        _, today_progress = self.progresses[-1]
+        _, yesterday_progress = self.progresses[-2]
+
+        self.today.value = str(today_progress - yesterday_progress)
+
+    def update_yesterday(self):
+        _, yesterday_progress = self.progresses[-2]
+        _, day_before_yesterday_progress = self.progresses[-3]
+
+        self.yesterday.value = str(yesterday_progress - day_before_yesterday_progress)
+
+    def update_total(self):
+        _, today_progress = self.progresses[-1]
+        self.overall.value = str(today_progress)
+        self.progressBar.progress = today_progress
+
+    def update_week_to_date(self):
+        today, today_progress = self.progresses[-1]
+
+        last_sunday_index = -(today.weekday()+1) - 1
+        _, last_week_progress = self.progresses[last_sunday_index]
+        self.week.value = str(today_progress - last_week_progress)
+
+    def update_last_week(self):
+        today, _ = self.progresses[-1]
+
+        last_sunday_index = -(today.weekday()+1) - 1
+        sunday_before_index = last_sunday_index - 7
+
+        _, p1 = self.progresses[last_sunday_index]
+        _, p2 = self.progresses[sunday_before_index]
+
+        self.last_week.value = str(p1 - p2)
+
+
+    def update_month_to_date(self):
+        today, today_progress = self.progresses[-1]
+        last_month_index = -(today.day+1) - 1
+
+        _, p = self.progresses[last_month_index]
+        self.month.value = str(today_progress - p)
+
+    def update_last_month(self):
+        today, _ = self.progresses[-1]
+        last_month_index = -(today.day+1) - 1
+
+        d1, p1 = self.progresses[last_month_index]
+
+        last_last_month_index = -d1.day + last_month_index
+        _, p2 = self.progresses[last_last_month_index]
+
+        self.last_month.value = str(p1 - p2)
+
 
     def get_comics_data(self):
         url = r"https://raw.githubusercontent.com/zuhairp/comics-tracker/main/data/2022.yml"
