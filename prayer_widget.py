@@ -1,4 +1,5 @@
 import sys
+import pathlib
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -70,8 +71,9 @@ class PrayerTable(QWidget):
         self.player = QMediaPlayer()
         self.player.setParent(self)
 
-        self.adhan = QMediaContent(QUrl.fromLocalFile("/home/zuhair/smartframe/adhan.mp3"))
-        self.fajr_adhan = QMediaContent(QUrl.fromLocalFile("/home/zuhair/smartframe/fajr_adhan.mp3"))
+        script_directory = pathlib.Path(__file__).parent.resolve()
+        self.adhan = QMediaContent(QUrl.fromLocalFile(str(script_directory.joinpath("adhan.mp3").resolve())))
+        self.fajr_adhan = QMediaContent(QUrl.fromLocalFile(str(script_directory.joinpath("fajr_adhan.mp3").resolve())))
 
         self.refresh_data()
     

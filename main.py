@@ -29,11 +29,11 @@ class MainWindow(QMainWindow):
         clock.setParent(windowWidget)
         clock.move(50, 50)
 
-        comic_info = ComicStats()
-        comic_info.setParent(windowWidget)
-        x = 20
-        y = 1080 - comic_info.height() - 20
-        comic_info.move(x, y)
+        # comic_info = ComicStats()
+        # comic_info.setParent(windowWidget)
+        # x = 20
+        # y = 1080 - comic_info.height() - 20
+        # comic_info.move(x, y)
 
         prayer_times = PrayerTable()
         prayer_times.setParent(windowWidget)

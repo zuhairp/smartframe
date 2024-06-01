@@ -1,6 +1,7 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+import pathlib
 
 class Picture(QWidget):
     def __init__(self):
@@ -13,9 +14,10 @@ class Picture(QWidget):
 
         self.watcher = QFileSystemWatcher()
         self.watcher.setParent(self)
-
-        self.watcher.addPath('/home/zuhair/smartframe/wallpaper.jpg')
-        self.watcher.addPath('/home/zuhair/smartframe')
+        
+        script_directory = pathlib.Path(__file__).parent.resolve()
+        self.watcher.addPath(str(script_directory.joinpath('wallpaper.jpg')))
+        self.watcher.addPath(str(script_directory))
 
         self.watcher.fileChanged.connect(self.reload_image)
         self.watcher.directoryChanged.connect(self.reload_image)
