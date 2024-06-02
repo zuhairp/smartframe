@@ -1,17 +1,14 @@
-import os
-
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtMultimedia import *
-
-import os
 import sys
+
+from PyQt5.QtGui import QFontDatabase, QKeyEvent
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+from PyQt5.QtCore import Qt
+from dimmer import Dimmer
 from photo_widget import Picture
-from comics_widget import ComicStats
 
 from prayer_widget import PrayerTable
 from clock import Clock
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -29,12 +26,6 @@ class MainWindow(QMainWindow):
         clock.setParent(windowWidget)
         clock.move(50, 50)
 
-        # comic_info = ComicStats()
-        # comic_info.setParent(windowWidget)
-        # x = 20
-        # y = 1080 - comic_info.height() - 20
-        # comic_info.move(x, y)
-
         prayer_times = PrayerTable()
         prayer_times.setParent(windowWidget)
 
@@ -45,8 +36,24 @@ class MainWindow(QMainWindow):
         clock.on_minute.connect(prayer_times.play_adhan_if_necessary)
         clock.on_day.connect(prayer_times.refresh_data)
 
+        self.dimmer = Dimmer()
+        self.dimmer.setParent(windowWidget)
+
         self.setCentralWidget(windowWidget)
         self.showFullScreen()
+
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        if a0.key() == Qt.Key.Key_Q:
+            sys.exit(0)
+        elif a0.key() == Qt.Key.Key_D:
+            self.dimmer.opacity = 200 if self.dimmer.opacity == 0 else 0
+            self.dimmer.repaint()
+        # elif a0.key() == Qt.Key.Key_BracketLeft:
+        #     self.dimmer.opacity = min(255, self.dimmer.opacity + 80)
+        #     self.dimmer.repaint()
+        # elif a0.key() == Qt.Key.Key_BracketRight:
+        #     self.dimmer.opacity = max(0, self.dimmer.opacity - 80)
+        #     self.dimmer.repaint()
 
 
 app = QApplication(sys.argv)

@@ -4,7 +4,7 @@
 import math
 import re
 
-'''
+"""
 --------------------- Copyright Block ----------------------
 
 praytimes.py: Prayer Times Calculator (ver 2.3)
@@ -56,73 +56,76 @@ http://praytimes.org/calculation
 	>>> times['sunrise']
 	07:26
 
-'''
+"""
 
 
 # ----------------------- PrayTimes Class ------------------------
 
-class PrayTimes():
+
+class PrayTimes:
     # ------------------------ Constants --------------------------
 
     # Time Names
     timeNames = {
-        'imsak': 'Imsak',
-        'fajr': 'Fajr',
-        'sunrise': 'Sunrise',
-        'dhuhr': 'Dhuhr',
-        'asr': 'Asr',
-        'sunset': 'Sunset',
-        'maghrib': 'Maghrib',
-        'isha': 'Isha',
-        'midnight': 'Midnight'
+        "imsak": "Imsak",
+        "fajr": "Fajr",
+        "sunrise": "Sunrise",
+        "dhuhr": "Dhuhr",
+        "asr": "Asr",
+        "sunset": "Sunset",
+        "maghrib": "Maghrib",
+        "isha": "Isha",
+        "midnight": "Midnight",
     }
 
     # Calculation Methods
     methods = {
-        'MWL': {
-            'name': 'Muslim World League',
-            'params': {'fajr': 18, 'isha': 17}},
-        'ISNA': {
-            'name': 'Islamic Society of North America (ISNA)',
-            'params': {'fajr': 15, 'isha': 15}},
-        'Egypt': {
-            'name': 'Egyptian General Authority of Survey',
-            'params': {'fajr': 19.5, 'isha': 17.5}},
-        'Makkah': {
-            'name': 'Umm Al-Qura University, Makkah',
-            'params': {'fajr': 18.5, 'isha': '90 min'}},  # fajr was 19 degrees before 1430 hijri
-        'Karachi': {
-            'name': 'University of Islamic Sciences, Karachi',
-            'params': {'fajr': 18, 'isha': 18}},
-        'Tehran': {
-            'name': 'Institute of Geophysics, University of Tehran',
-            'params': {'fajr': 17.7, 'isha': 14, 'maghrib': 4.5, 'midnight': 'Jafari'}},
+        "MWL": {"name": "Muslim World League", "params": {"fajr": 18, "isha": 17}},
+        "ISNA": {
+            "name": "Islamic Society of North America (ISNA)",
+            "params": {"fajr": 15, "isha": 15},
+        },
+        "Egypt": {
+            "name": "Egyptian General Authority of Survey",
+            "params": {"fajr": 19.5, "isha": 17.5},
+        },
+        "Makkah": {
+            "name": "Umm Al-Qura University, Makkah",
+            "params": {"fajr": 18.5, "isha": "90 min"},
+        },  # fajr was 19 degrees before 1430 hijri
+        "Karachi": {
+            "name": "University of Islamic Sciences, Karachi",
+            "params": {"fajr": 18, "isha": 18},
+        },
+        "Tehran": {
+            "name": "Institute of Geophysics, University of Tehran",
+            "params": {"fajr": 17.7, "isha": 14, "maghrib": 4.5, "midnight": "Jafari"},
+        },
         # isha is not explicitly specified in this method
-        'Jafari': {
-            'name': 'Shia Ithna-Ashari, Leva Institute, Qum',
-            'params': {'fajr': 16, 'isha': 14, 'maghrib': 4, 'midnight': 'Jafari'}}
+        "Jafari": {
+            "name": "Shia Ithna-Ashari, Leva Institute, Qum",
+            "params": {"fajr": 16, "isha": 14, "maghrib": 4, "midnight": "Jafari"},
+        },
     }
 
     # Default Parameters in Calculation Methods
-    defaultParams = {
-        'maghrib': '0 min', 'midnight': 'Standard'
-    }
+    defaultParams = {"maghrib": "0 min", "midnight": "Standard"}
 
     # ---------------------- Default Settings --------------------
 
-    calcMethod = 'MWL'
+    calcMethod = "MWL"
 
     # do not change anything here; use adjust method instead
     settings = {
-        "imsak": '10 min',
-        "dhuhr": '0 min',
-        "asr": 'Standard',
-        "highLats": 'NightMiddle'
+        "imsak": "10 min",
+        "dhuhr": "0 min",
+        "asr": "Standard",
+        "highLats": "NightMiddle",
     }
 
-    timeFormat = '24h'
-    timeSuffixes = ['am', 'pm']
-    invalidTime = '-----'
+    timeFormat = "24h"
+    timeSuffixes = ["am", "pm"]
+    invalidTime = "-----"
 
     numIterations = 1
     offset = {}
@@ -130,17 +133,16 @@ class PrayTimes():
     # ---------------------- Initialization -----------------------
 
     def __init__(self, calMethod="MWL"):
-
         # set methods defaults
         global method
         for method, config in self.methods.items():
             for name, value in self.defaultParams.items():
-                if not name in config['params'] or config['params'][name] is None:
-                    config['params'][name] = value
+                if not name in config["params"] or config["params"][name] is None:
+                    config["params"][name] = value
 
         # initialize settings
-        self.calcMethod = calMethod if method in self.methods else 'MWL'
-        params = self.methods[self.calcMethod]['params']
+        self.calcMethod = calMethod if method in self.methods else "MWL"
+        params = self.methods[self.calcMethod]["params"]
         value: int
         for name, value in params.items():
             self.settings[name] = value
@@ -181,7 +183,7 @@ class PrayTimes():
         self.elv = coords[2] if len(coords) > 2 else 0
         if format != None:
             self.timeFormat = format
-        if type(date).__name__ == 'date':
+        if type(date).__name__ == "date":
             date = (date.year, date.month, date.day)
         self.timeZone = timezone + (1 if dst else 0)
         self.jDate = self.julian(date[0], date[1], date[2]) - self.lng / (15 * 24.0)
@@ -191,7 +193,7 @@ class PrayTimes():
     def getFormattedTime(self, time, format, suffixes=None):
         if math.isnan(time):
             return self.invalidTime
-        if format == 'Float':
+        if format == "Float":
             return time
         if suffixes == None:
             suffixes = self.timeSuffixes
@@ -200,9 +202,12 @@ class PrayTimes():
         hours = math.floor(time)
 
         minutes = math.floor((time - hours) * 60)
-        suffix = suffixes[0 if hours < 12 else 1] if format == '12h' else ''
-        formattedTime = "%02d:%02d" % (hours, minutes) if format == "24h" else "%d:%02d" % (
-            (hours + 11) % 12 + 1, minutes)
+        suffix = suffixes[0 if hours < 12 else 1] if format == "12h" else ""
+        formattedTime = (
+            "%02d:%02d" % (hours, minutes)
+            if format == "24h"
+            else "%d:%02d" % ((hours + 11) % 12 + 1, minutes)
+        )
         return formattedTime + suffix
 
     # ---------------------- Calculation Functions -----------------------
@@ -217,11 +222,17 @@ class PrayTimes():
         try:
             decl = self.sunPosition(self.jDate + time)[0]
             noon = self.midDay(time)
-            t = 1 / 15.0 * self.arccos((-self.sin(angle) - self.sin(decl) * self.sin(self.lat)) /
-                                       (self.cos(decl) * self.cos(self.lat)))
-            return noon + (-t if direction == 'ccw' else t)
+            t = (
+                1
+                / 15.0
+                * self.arccos(
+                    (-self.sin(angle) - self.sin(decl) * self.sin(self.lat))
+                    / (self.cos(decl) * self.cos(self.lat))
+                )
+            )
+            return noon + (-t if direction == "ccw" else t)
         except ValueError:
-            return float('nan')
+            return float("nan")
 
     # compute asr time
     def asrTime(self, factor, time):
@@ -254,7 +265,13 @@ class PrayTimes():
             month += 12
         A = math.floor(year / 100)
         B = 2 - A + math.floor(A / 4)
-        return math.floor(365.25 * (year + 4716)) + math.floor(30.6001 * (month + 1)) + day + B - 1524.5
+        return (
+            math.floor(365.25 * (year + 4716))
+            + math.floor(30.6001 * (month + 1))
+            + day
+            + B
+            - 1524.5
+        )
 
     # ---------------------- Compute Prayer Times -----------------------
 
@@ -263,24 +280,38 @@ class PrayTimes():
         times = self.dayPortion(times)
         params = self.settings
 
-        imsak = self.sunAngleTime(self.eval(params['imsak']), times['imsak'], 'ccw')
-        fajr = self.sunAngleTime(self.eval(params['fajr']), times['fajr'], 'ccw')
-        sunrise = self.sunAngleTime(self.riseSetAngle(self.elv), times['sunrise'], 'ccw')
-        dhuhr = self.midDay(times['dhuhr'])
-        asr = self.asrTime(self.asrFactor(params['asr']), times['asr'])
-        sunset = self.sunAngleTime(self.riseSetAngle(self.elv), times['sunset'])
-        maghrib = self.sunAngleTime(self.eval(params['maghrib']), times['maghrib'])
-        isha = self.sunAngleTime(self.eval(params['isha']), times['isha'])
+        imsak = self.sunAngleTime(self.eval(params["imsak"]), times["imsak"], "ccw")
+        fajr = self.sunAngleTime(self.eval(params["fajr"]), times["fajr"], "ccw")
+        sunrise = self.sunAngleTime(
+            self.riseSetAngle(self.elv), times["sunrise"], "ccw"
+        )
+        dhuhr = self.midDay(times["dhuhr"])
+        asr = self.asrTime(self.asrFactor(params["asr"]), times["asr"])
+        sunset = self.sunAngleTime(self.riseSetAngle(self.elv), times["sunset"])
+        maghrib = self.sunAngleTime(self.eval(params["maghrib"]), times["maghrib"])
+        isha = self.sunAngleTime(self.eval(params["isha"]), times["isha"])
         return {
-            'imsak': imsak, 'fajr': fajr, 'sunrise': sunrise, 'dhuhr': dhuhr,
-            'asr': asr, 'sunset': sunset, 'maghrib': maghrib, 'isha': isha
+            "imsak": imsak,
+            "fajr": fajr,
+            "sunrise": sunrise,
+            "dhuhr": dhuhr,
+            "asr": asr,
+            "sunset": sunset,
+            "maghrib": maghrib,
+            "isha": isha,
         }
 
     # compute prayer times
     def computeTimes(self):
         times = {
-            'imsak': 5, 'fajr': 5, 'sunrise': 6, 'dhuhr': 12,
-            'asr': 13, 'sunset': 18, 'maghrib': 18, 'isha': 18
+            "imsak": 5,
+            "fajr": 5,
+            "sunrise": 6,
+            "dhuhr": 12,
+            "asr": 13,
+            "sunset": 18,
+            "maghrib": 18,
+            "isha": 18,
         }
         # main iterations
         for i in range(self.numIterations):
@@ -288,10 +319,14 @@ class PrayTimes():
 
         times = self.adjustTimes(times)
         # add midnight time
-        if self.settings['midnight'] == 'Jafari':
-            times['midnight'] = times['sunset'] + self.timeDiff(times['sunset'], times['fajr']) / 2
+        if self.settings["midnight"] == "Jafari":
+            times["midnight"] = (
+                times["sunset"] + self.timeDiff(times["sunset"], times["fajr"]) / 2
+            )
         else:
-            times['midnight'] = times['sunset'] + self.timeDiff(times['sunset'], times['sunrise']) / 2
+            times["midnight"] = (
+                times["sunset"] + self.timeDiff(times["sunset"], times["sunrise"]) / 2
+            )
 
         times = self.tuneTimes(times)
         return self.modifyFormats(times)
@@ -303,24 +338,24 @@ class PrayTimes():
         for t, v in times.items():
             times[t] += tzAdjust
 
-        if params['highLats'] != 'None':
+        if params["highLats"] != "None":
             times = self.adjustHighLats(times)
 
-        if self.isMin(params['imsak']):
-            times['imsak'] = times['fajr'] - self.eval(params['imsak']) / 60.0
+        if self.isMin(params["imsak"]):
+            times["imsak"] = times["fajr"] - self.eval(params["imsak"]) / 60.0
         # need to ask about 'min' settings
-        if self.isMin(params['maghrib']):
-            times['maghrib'] = times['sunset'] + self.eval(params['maghrib']) / 60.0
+        if self.isMin(params["maghrib"]):
+            times["maghrib"] = times["sunset"] + self.eval(params["maghrib"]) / 60.0
 
-        if self.isMin(params['isha']):
-            times['isha'] = times['maghrib'] + self.eval(params['isha']) / 60.0
-        times['dhuhr'] += self.eval(params['dhuhr']) / 60.0
+        if self.isMin(params["isha"]):
+            times["isha"] = times["maghrib"] + self.eval(params["isha"]) / 60.0
+        times["dhuhr"] += self.eval(params["dhuhr"]) / 60.0
 
         return times
 
     # get asr shadow factor
     def asrFactor(self, asrParam):
-        methods = {'Standard': 1, 'Hanafi': 2}
+        methods = {"Standard": 1, "Hanafi": 2}
         return methods[asrParam] if asrParam in methods else self.eval(asrParam)
 
     # return sun angle for sunset/sunrise
@@ -343,29 +378,46 @@ class PrayTimes():
     # adjust times for locations in higher latitudes
     def adjustHighLats(self, times):
         params = self.settings
-        nightTime = self.timeDiff(times['sunset'], times['sunrise'])  # sunset to sunrise
-        times['imsak'] = self.adjustHLTime(times['imsak'], times['sunrise'], self.eval(params['imsak']), nightTime,
-                                           'ccw')
-        times['fajr'] = self.adjustHLTime(times['fajr'], times['sunrise'], self.eval(params['fajr']), nightTime, 'ccw')
-        times['isha'] = self.adjustHLTime(times['isha'], times['sunset'], self.eval(params['isha']), nightTime)
-        times['maghrib'] = self.adjustHLTime(times['maghrib'], times['sunset'], self.eval(params['maghrib']), nightTime)
+        nightTime = self.timeDiff(
+            times["sunset"], times["sunrise"]
+        )  # sunset to sunrise
+        times["imsak"] = self.adjustHLTime(
+            times["imsak"],
+            times["sunrise"],
+            self.eval(params["imsak"]),
+            nightTime,
+            "ccw",
+        )
+        times["fajr"] = self.adjustHLTime(
+            times["fajr"], times["sunrise"], self.eval(params["fajr"]), nightTime, "ccw"
+        )
+        times["isha"] = self.adjustHLTime(
+            times["isha"], times["sunset"], self.eval(params["isha"]), nightTime
+        )
+        times["maghrib"] = self.adjustHLTime(
+            times["maghrib"], times["sunset"], self.eval(params["maghrib"]), nightTime
+        )
         return times
 
     # adjust a time for higher latitudes
     def adjustHLTime(self, time, base, angle, night, direction=None):
         portion = self.nightPortion(angle, night)
-        diff = self.timeDiff(time, base) if direction == 'ccw' else self.timeDiff(base, time)
+        diff = (
+            self.timeDiff(time, base)
+            if direction == "ccw"
+            else self.timeDiff(base, time)
+        )
         if math.isnan(time) or diff > portion:
-            time = base + (-portion if direction == 'ccw' else portion)
+            time = base + (-portion if direction == "ccw" else portion)
         return time
 
     # the night portion used for adjusting times in higher latitudes
     def nightPortion(self, angle, night):
-        method = self.settings['highLats']
+        method = self.settings["highLats"]
         portion = 1 / 2.0  # midnight
-        if method == 'AngleBased':
+        if method == "AngleBased":
             portion = 1 / 60.0 * angle
-        if method == 'OneSeventh':
+        if method == "OneSeventh":
             portion = 1 / 7.0
         return portion * night
 
@@ -383,12 +435,12 @@ class PrayTimes():
 
     # convert given string into a number
     def eval(self, st):
-        val = re.split('[^0-9.+-]', str(st), 1)[0]
+        val = re.split("[^0-9.+-]", str(st), 1)[0]
         return float(val) if val else 0
 
     # detect if input contains 'min'
     def isMin(self, arg):
-        return isinstance(arg, str) and arg.find('min') > -1
+        return isinstance(arg, str) and arg.find("min") > -1
 
     # ----------------- Degree-Based Math Functions -------------------
 
@@ -436,10 +488,9 @@ class PrayTimes():
 
 # sample code to run in standalone mode only
 if __name__ == "__main__":
-
     # print('Prayer Times for today in Waterloo/Canada\n' + ('=' * 41))
-    prayTimes = PrayTimes('ISNA')
-    prayTimes.adjust({'asr': 'Hanafi'})
+    prayTimes = PrayTimes("ISNA")
+    prayTimes.adjust({"asr": "Hanafi"})
     times = prayTimes.getTimes([2022, 4, 11], (47.67, -122.12), -7)
-    for i in ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha', 'Midnight']:
-        print(i + ': ' + times[i.lower()])
+    for i in ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha", "Midnight"]:
+        print(i + ": " + times[i.lower()])
