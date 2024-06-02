@@ -105,7 +105,7 @@ class PrayerTable(QWidget):
 
     def refresh_data(self):
         prayTimes = PrayTimes("ISNA")
-        prayTimes.adjust({"asr": "Hanafi"})
+        # prayTimes.adjust({"asr": "Hanafi"})
 
         today = date.today()
         year, month, day = today.year, today.month, today.day
