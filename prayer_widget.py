@@ -1,11 +1,11 @@
 import sys
 import pathlib
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtMultimedia import *
-
 from datetime import date, datetime
+
+from PyQt5.QtCore import QRectF, QUrl, Qt
+from PyQt5.QtGui import QColor, QFont, QPainterPath, QRegion
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QSizePolicy, QSpacerItem, QVBoxLayout, QWidget
 from praytime import PrayTimes
 
 
@@ -30,7 +30,7 @@ class PrayerTime(QWidget):
 
         self.name.adjustSize()
         self.time.adjustSize()
-
+        
         self.layout.addWidget(self.name, 2, alignment=Qt.AlignmentFlag.AlignRight)
         self.layout.addWidget(self.time, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 

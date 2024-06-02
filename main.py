@@ -26,15 +26,15 @@ class MainWindow(QMainWindow):
         clock.setParent(windowWidget)
         clock.move(50, 50)
 
-        prayer_times = PrayerTable()
-        prayer_times.setParent(windowWidget)
+        self.prayer_times = PrayerTable()
+        self.prayer_times.setParent(windowWidget)
 
-        x = 1920 - prayer_times.width() - 20
-        y = 1080 - prayer_times.height() - 20
-        prayer_times.move(x, y)
+        x = 1920 - self.prayer_times.width() - 20
+        y = 1080 - self.prayer_times.height() - 20
+        self.prayer_times.move(x, y)
 
-        clock.on_minute.connect(prayer_times.play_adhan_if_necessary)
-        clock.on_day.connect(prayer_times.refresh_data)
+        clock.on_minute.connect(self.prayer_times.play_adhan_if_necessary)
+        clock.on_day.connect(self.prayer_times.refresh_data)
 
         self.dimmer = Dimmer()
         self.dimmer.setParent(windowWidget)
@@ -48,12 +48,8 @@ class MainWindow(QMainWindow):
         elif a0.key() == Qt.Key.Key_D:
             self.dimmer.opacity = 200 if self.dimmer.opacity == 0 else 0
             self.dimmer.repaint()
-        # elif a0.key() == Qt.Key.Key_BracketLeft:
-        #     self.dimmer.opacity = min(255, self.dimmer.opacity + 80)
-        #     self.dimmer.repaint()
-        # elif a0.key() == Qt.Key.Key_BracketRight:
-        #     self.dimmer.opacity = max(0, self.dimmer.opacity - 80)
-        #     self.dimmer.repaint()
+        elif a0.key() == Qt.Key.Key_Space:
+            self.prayer_times.player.stop()
 
 
 app = QApplication(sys.argv)
